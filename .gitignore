@@ -1,0 +1,13 @@
+# VSCode file
+.vscode
+.code-workspace
+
+# latex build files
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+
+# pdf files
+*.pdf
