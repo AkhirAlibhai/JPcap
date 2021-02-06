@@ -1,5 +1,5 @@
 module jPcap
 
-include("types/Ipv4Hdr.jl")
+include("types/internetHdrs.jl")
 
 end
