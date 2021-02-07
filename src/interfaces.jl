@@ -7,5 +7,5 @@ function pcap_lookupdev()
         print("Could not find default device: ", unsafe_string(err))
         return nothing
     end
-    return unsafe_string(dev)
+    unsafe_string(dev)
 end
