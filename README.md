@@ -4,6 +4,11 @@
 
 To create a library that allows crafting and sniffing of packets in Julia.
 
+# Dependencies
+
+- julia
+- libpcap-dev
+
 # Todo list
 
 - [ ] View Interfaces on device
