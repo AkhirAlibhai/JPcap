@@ -1,4 +1,5 @@
-export pcap_lookupdev
+export pcap_lookupdev,
+        sockaddr
 
 function pcap_lookupdev()
     err = Ptr{Int8}()
@@ -7,5 +8,11 @@ function pcap_lookupdev()
         print("Could not find default device: ", unsafe_string(err))
         return nothing
     end
-    return unsafe_string(dev)
+    unsafe_string(dev)
+end
+
+struct sockaddr
+    sa_family::Cushort
+    se_data::Cstring
+    sockaddr() = new(0, Base.unsafe_convert(Cstring, ""))
 end
