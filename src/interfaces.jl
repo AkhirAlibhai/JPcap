@@ -1,7 +1,9 @@
 export pcap_lookupdev,
-        sockaddr, pcap_addr, pcap_if_t, pcap_findalldevs
+        sockaddr, pcap_addr, pcap_if_t,
+        pcap_findalldevs, pcap_freealldevs
 
-function pcap_lookupdev()
+function pcap_lookupdev()::String
+    # Returns the name of the default device, if it exists
     err = Ptr{Int8}()
 
     dev = ccall((:pcap_lookupdev, "libpcap"), Ptr{Int8}, (Ptr{Int8},), err)
@@ -40,15 +42,23 @@ struct pcap_if_t
                     0)
 end
 
-function pcap_findalldevs()
+const PCAP_ERROR = -1
+
+function pcap_findalldevs()::Ptr{pcap_if_t}
+    # Returns a list of all devices
     devs = Ref{pcap_if_t}()
     err = Ptr{Int8}()
 
     val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{pcap_if_t}, Ptr{Int8}), devs, err)
 
-    if val == -1
+    if val == PCAP_ERROR
         print("Error occured when looking up all devices: ", unsafe_string(err))
         return nothing
     end
     devs[].next # Call unsafe_load on it to access
+end
+
+function pcap_freealldevs(alldevs::Ptr{pcap_if_t})::nothing
+    # Frees the memory allocated to the Ptr{pcap_if_t}
+    ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), alldevs)
 end
