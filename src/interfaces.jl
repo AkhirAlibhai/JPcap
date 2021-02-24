@@ -1,6 +1,7 @@
 export pcap_lookupdev,
         sockaddr, pcap_addr, pcap_if_t,
-        pcap_findalldevs, pcap_freealldevs
+        pcap_findalldevs, pcap_freealldevs,
+        j_pcap_if_t, j_pcap_addr, j_sockaddr
 
 function pcap_lookupdev()::String
     # Returns the name of the default device, if it exists
@@ -21,6 +22,10 @@ struct sockaddr
     sockaddr() = new(0, Base.unsafe_convert(Cstring, ""))
 end
 
+struct j_sockaddr
+
+end
+
 struct pcap_addr
     next::Ptr{pcap_addr}
     addr::Ptr{sockaddr}
@@ -31,15 +36,53 @@ struct pcap_addr
                                         Ptr{sockaddr}(), Ptr{sockaddr}())
 end
 
+struct j_pcap_addr
+
+end
+
 struct pcap_if_t
     next::Ptr{pcap_if_t}
     name::Cstring
     description::Cstring
     addresses::Ptr{pcap_addr}
-    flags::UInt
+    flags::Cuint
     pcap_if_t() = new(Ptr{pcap_if_t}(), Base.unsafe_convert(Cstring, ""),
                     Base.unsafe_convert(Cstring, ""), Ptr{pcap_addr}(),
                     0)
+end
+
+struct j_pcap_if_t
+    ptr::Ptr{Union{pcap_if_t, Nothing}}
+    next::Union{j_pcap_if_t, Nothing}
+    name::String
+    description::String
+    # addresses::j_pcap_addr
+    flags::UInt32
+    function j_pcap_if_t(pcap_if_t::Ptr{pcap_if_t})
+        if pcap_if_t == C_NULL
+            return new(C_NULL,
+                        nothing,
+                        "",
+                        "",
+                        # j_pcap_addr(),
+                        0)
+        end
+
+        loaded_pcap_if_t = unsafe_load(pcap_if_t)
+        tmp_name = if (loaded_pcap_if_t.name == C_NULL) ""
+        else unsafe_string(loaded_pcap_if_t.name)
+        end
+        tmp_description = if (loaded_pcap_if_t.description == C_NULL) ""
+        else unsafe_string(loaded_pcap_if_t.description)
+        end
+
+        new(pcap_if_t,
+            j_pcap_if_t(loaded_pcap_if_t.next),
+            tmp_name,
+            tmp_description,
+            # j_pcap_addr(),
+            loaded_pcap_if_t.flags)
+    end
 end
 
 const PCAP_ERROR = -1
