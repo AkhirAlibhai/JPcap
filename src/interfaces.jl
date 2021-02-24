@@ -101,7 +101,7 @@ function pcap_findalldevs()::Ptr{pcap_if_t}
     devs[].next # Call unsafe_load on it to access
 end
 
-function pcap_freealldevs(alldevs::Ptr{pcap_if_t})::nothing
+function pcap_freealldevs(alldevs::Ptr{pcap_if_t})::Nothing
     # Frees the memory allocated to the Ptr{pcap_if_t}
     ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), alldevs)
 end
