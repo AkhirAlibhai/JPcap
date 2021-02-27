@@ -23,7 +23,15 @@ struct sockaddr
 end
 
 struct j_sockaddr
-
+    sa_familiy::UInt16 # TODO: Map the sockaddrs to their type here
+    sa_data::Nothing # See TODO in sockaddr
+    function j_sockaddr(sockaddr::Ptr{sockaddr})
+        if (sockaddr == C_NULL)
+            return nothing
+        end
+        new(unsafe_load(sockaddr).sa_family,
+            nothing)
+    end
 end
 
 struct pcap_addr
@@ -37,7 +45,26 @@ struct pcap_addr
 end
 
 struct j_pcap_addr
+    ptr::Ptr{Union{pcap_addr, Nothing}}
+    next::Union{j_pcap_addr, Nothing}
+    addr::Union{j_sockaddr, Nothing}
+    netmask::Union{j_sockaddr, Nothing}
+    broadaddr::Union{j_sockaddr, Nothing}
+    dstaddr::Union{j_sockaddr, Nothing}
+    function j_pcap_addr(pcap_addr::Ptr{pcap_addr})
+        if pcap_addr == C_NULL
+            return nothing
+        end
 
+        loaded_pcap_addr = unsafe_load(pcap_addr)
+
+        new(pcap_addr,
+            j_pcap_addr(loaded_pcap_addr.next),
+            j_sockaddr(loaded_pcap_addr.addr),
+            j_sockaddr(loaded_pcap_addr.netmask),
+            j_sockaddr(loaded_pcap_addr.broadaddr),
+            j_sockaddr(loaded_pcap_addr.dstaddr))
+    end
 end
 
 struct pcap_if_t
@@ -56,7 +83,7 @@ struct j_pcap_if_t
     next::Union{j_pcap_if_t, Nothing}
     name::String
     description::String
-    # addresses::j_pcap_addr
+    addresses::Union{j_pcap_addr, Nothing}
     flags::UInt32
     function j_pcap_if_t(pcap_if_t::Ptr{pcap_if_t})
         if pcap_if_t == C_NULL
@@ -64,7 +91,7 @@ struct j_pcap_if_t
                         nothing,
                         "",
                         "",
-                        # j_pcap_addr(),
+                        nothing,
                         0)
         end
 
@@ -80,7 +107,7 @@ struct j_pcap_if_t
             j_pcap_if_t(loaded_pcap_if_t.next),
             tmp_name,
             tmp_description,
-            # j_pcap_addr(),
+            j_pcap_addr(loaded_pcap_if_t.addresses),
             loaded_pcap_if_t.flags)
     end
 end
