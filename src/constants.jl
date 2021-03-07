@@ -1,3 +1,12 @@
-export PCAP_ERROR
+export PCAP_ERROR, PCAP_WARNING
 
-const PCAP_ERROR = -1
+"""
+    Error codes for the pcap API that are returned from multiple functions
+"""
+const PCAP_ERROR =      -1 # generic error code
+
+
+"""
+    Warning codes for the pcap API that are returned from multiple functions
+"""
+const PCAP_WARNING =    1 # generic warning code
