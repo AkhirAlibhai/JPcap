@@ -9,9 +9,13 @@ To create a library that allows crafting and sniffing of packets in Julia.
 - julia
 - libpcap-dev
 
+# libpcap repository
+
+https://github.com/the-tcpdump-group/libpcap
+
 # Todo list
 
-- [ ] View Interfaces on device
+- [x] View Interfaces on device
 - [ ] Intial packet structure
 - [ ] Intial creation process of packets
 - [ ] Intial sending process of packets
