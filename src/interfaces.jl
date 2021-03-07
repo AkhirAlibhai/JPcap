@@ -1,3 +1,5 @@
+include("constants.jl")
+
 export pcap_lookupdev,
         sockaddr, pcap_addr, pcap_if_t,
         pcap_findalldevs, pcap_freealldevs,
@@ -111,8 +113,6 @@ struct j_pcap_if_t
             loaded_pcap_if_t.flags)
     end
 end
-
-const PCAP_ERROR = -1
 
 function pcap_findalldevs()::Ptr{pcap_if_t}
     # Returns a list of all devices
