@@ -1,4 +1,5 @@
-export pcap_create, pcap_activate
+export pcap_create, pcap_activate,
+        pcap_geterr, pcap_perror
 
 mutable struct pcap_t
 end
@@ -15,6 +16,16 @@ function pcap_create(source::String)::Ptr{pcap_t}
         return nothing
     end
     handle
+end
+
+function pcap_geterr(p::Ptr{pcap_t})::String
+    # Gets the error message for the given Ptr{pcap_t}
+    unsafe_string(ccall((:pcap_geterr, "libpcap"), Ptr{Int8}, (Ptr{pcap_t},), p))
+end
+
+function pcap_perror(p::Ptr{pcap_t})::Cvoid
+    # Prints the error message for the given Ptr{pcap_t}
+    println(pcap_geterr(p))
 end
 
 const PCAP_ERROR_ACTIVATED =        -4  # the operation can't be performed on already activated captures
