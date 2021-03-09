@@ -23,7 +23,7 @@ function pcap_geterr(p::Ptr{pcap_t})::String
     unsafe_string(ccall((:pcap_geterr, "libpcap"), Ptr{Int8}, (Ptr{pcap_t},), p))
 end
 
-function pcap_perror(p::Ptr{pcap_t})::Cvoid
+function pcap_perror(p::Ptr{pcap_t})::Nothing
     # Prints the error message for the given Ptr{pcap_t}
     println(pcap_geterr(p))
 end
