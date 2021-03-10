@@ -1,4 +1,5 @@
 export pcap_create, pcap_activate,
+        pcap_close,
         pcap_geterr, pcap_perror
 
 mutable struct pcap_t
@@ -18,16 +19,6 @@ function pcap_create(source::String)::Ptr{pcap_t}
     handle
 end
 
-function pcap_geterr(p::Ptr{pcap_t})::String
-    # Gets the error message for the given Ptr{pcap_t}
-    unsafe_string(ccall((:pcap_geterr, "libpcap"), Ptr{Int8}, (Ptr{pcap_t},), p))
-end
-
-function pcap_perror(p::Ptr{pcap_t})::Nothing
-    # Prints the error message for the given Ptr{pcap_t}
-    println(pcap_geterr(p))
-end
-
 const PCAP_ERROR_ACTIVATED =        -4  # the operation can't be performed on already activated captures
 const PCAP_ERROR_NO_SUCH_DEVICE =   -5	# no such device exists
 const PCAP_ERROR_RFMON_NOTSUP =     -6	# this device doesn't support rfmon (monitor) mode
@@ -39,4 +30,19 @@ const PCAP_WARNING_PROMISC_NOTSUP = 2	# this device doesn't support promiscuous 
 function pcap_activate(p::Ptr{pcap_t})::Int32
     # Activates a capture handle
     ccall((:pcap_activate, "libpcap"), Int8, (Ptr{pcap_t},), p)
+end
+
+function pcap_close(p::Ptr{pcap_t})::Nothing
+    # Closes the capture device
+    ccall((:pcap_close, "libpcap"), Cvoid, (Ptr{pcap_t},), p)
+end
+
+function pcap_geterr(p::Ptr{pcap_t})::String
+    # Gets the error message for the given Ptr{pcap_t}
+    unsafe_string(ccall((:pcap_geterr, "libpcap"), Ptr{Int8}, (Ptr{pcap_t},), p))
+end
+
+function pcap_perror(p::Ptr{pcap_t})::Nothing
+    # Prints the error message for the given Ptr{pcap_t}
+    println(pcap_geterr(p))
 end
