@@ -7,12 +7,13 @@ export pcap_lookupdev,
 
 function pcap_lookupdev()::String
     # Returns the name of the default device, if it exists
-    err = Ptr{UInt8}()
+    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     dev = ccall((:pcap_lookupdev, "libpcap"), Ptr{Int8}, (Ptr{UInt8},), err)
 
     if dev == C_NULL
-        println("Could not find default device: ", unsafe_string(err))
+        println("Could not find default device: ",
+                unsafe_string(pointer(err)))
         return nothing
     end
     unsafe_string(dev)
@@ -42,8 +43,11 @@ struct pcap_addr
     netmask::Ptr{sockaddr}
     broadaddr::Ptr{sockaddr}
     dstaddr::Ptr{sockaddr}
-    pcap_addr() = new(Ptr{pcap_addr}(), Ptr{sockaddr}(), Ptr{sockaddr}(),
-                                        Ptr{sockaddr}(), Ptr{sockaddr}())
+    pcap_addr() = new(Ptr{pcap_addr}(),
+                        Ptr{sockaddr}(),
+                        Ptr{sockaddr}(),
+                        Ptr{sockaddr}(),
+                        Ptr{sockaddr}())
 end
 
 struct j_pcap_addr
@@ -75,9 +79,11 @@ struct pcap_if_t
     description::Cstring
     addresses::Ptr{pcap_addr}
     flags::Cuint
-    pcap_if_t() = new(Ptr{pcap_if_t}(), Base.unsafe_convert(Cstring, ""),
-                    Base.unsafe_convert(Cstring, ""), Ptr{pcap_addr}(),
-                    0)
+    pcap_if_t() = new(Ptr{pcap_if_t}(),
+                        "",
+                        "",
+                        Ptr{pcap_addr}(),
+                        0)
 end
 
 struct j_pcap_if_t
@@ -117,12 +123,13 @@ end
 function pcap_findalldevs()::Ptr{pcap_if_t}
     # Returns a list of all devices
     devs = Ref{pcap_if_t}()
-    err = Ptr{UInt8}()
+    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{pcap_if_t}, Ptr{UInt8}), devs, err)
 
     if val == PCAP_ERROR
-        println("Error occured when looking up all devices: ", unsafe_string(err))
+        println("Error occured when looking up all devices: ",
+                unsafe_string(pointer(err)))
         return nothing
     end
     devs[].next # Call unsafe_load on it to access

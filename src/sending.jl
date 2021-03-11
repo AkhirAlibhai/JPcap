@@ -8,14 +8,14 @@ end
 
 function pcap_create(source::String)::Ptr{pcap_t}
     # Creates a live capture handle for the given interface
-    err = Ptr{UInt8}()
+    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     handle = ccall((:pcap_create, "libpcap"), Ptr{pcap_t}, (Cstring, Ptr{UInt8}), source, err)
 
     loaded_handle = unsafe_load(handle)
     if loaded_handle == C_NULL
         println("Error occured when attempting to create live capture handle: ",
-                unsafe_string(err))
+                unsafe_string(pointer(err)))
         return nothing
     end
     handle
@@ -49,17 +49,16 @@ function pcap_perror(p::Ptr{pcap_t})::Nothing
     println(pcap_geterr(p))
 end
 
-function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::Int64)::Ptr{pcap_t}
+function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::Int64)::Union{Ptr{pcap_t}, Nothing}
     # Opens a device for capturing
-    err = Ptr{UInt8}()
+    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     handle = ccall((:pcap_open_live, "libpcap"), Ptr{pcap_t}, (Cstring, Int32, Int32, Int32,
                                         Ptr{UInt8}), device, snaplen, promisc, to_ms, err)
 
-    loaded_handle = unsafe_load(handle)
-    if loaded_handle == C_NULL
+    if handle == C_NULL
         println("Error occured when attempting to create live capture handle: ",
-                unsafe_string(err))
+                unsafe_string(pointer(err)))
         return nothing
     end
     handle
