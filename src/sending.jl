@@ -9,7 +9,7 @@ function pcap_create(source::String)::Ptr{pcap_t}
     # Creates a live capture handle for the given interface
     err = Ptr{UInt8}()
 
-    handle = ccall((:pcap_create, "libpcap"), Ptr{pcap_t}, (Cstring, Ptr{Int8}), Base.cconvert(Cstring, source), err)
+    handle = ccall((:pcap_create, "libpcap"), Ptr{pcap_t}, (Cstring, Ptr{UInt8}), Base.cconvert(Cstring, source), err)
 
     loaded_handle = unsafe_load(handle)
     if loaded_handle == C_NULL

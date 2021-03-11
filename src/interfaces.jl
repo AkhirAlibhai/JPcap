@@ -9,7 +9,7 @@ function pcap_lookupdev()::String
     # Returns the name of the default device, if it exists
     err = Ptr{UInt8}()
 
-    dev = ccall((:pcap_lookupdev, "libpcap"), Ptr{Int8}, (Ptr{Int8},), err)
+    dev = ccall((:pcap_lookupdev, "libpcap"), Ptr{Int8}, (Ptr{UInt8},), err)
 
     if dev == C_NULL
         println("Could not find default device: ", unsafe_string(err))
@@ -119,7 +119,7 @@ function pcap_findalldevs()::Ptr{pcap_if_t}
     devs = Ref{pcap_if_t}()
     err = Ptr{UInt8}()
 
-    val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{pcap_if_t}, Ptr{Int8}), devs, err)
+    val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{pcap_if_t}, Ptr{UInt8}), devs, err)
 
     if val == PCAP_ERROR
         println("Error occured when looking up all devices: ", unsafe_string(err))
