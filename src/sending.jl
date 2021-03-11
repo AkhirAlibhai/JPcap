@@ -7,13 +7,13 @@ end
 
 function pcap_create(source::String)::Ptr{pcap_t}
     # Creates a live capture handle for the given interface
-    err = Ptr{Int8}()
+    err = Ptr{UInt8}()
 
     handle = ccall((:pcap_create, "libpcap"), Ptr{pcap_t}, (Cstring, Ptr{Int8}), Base.cconvert(Cstring, source), err)
 
     loaded_handle = unsafe_load(handle)
     if loaded_handle == C_NULL
-        print("Error occured when attempting to create live capture handle: ", unsafe_string(err))
+        println("Error occured when attempting to create live capture handle: ", unsafe_string(err))
         return nothing
     end
     handle
@@ -29,7 +29,7 @@ const PCAP_WARNING_PROMISC_NOTSUP = 2	# this device doesn't support promiscuous 
 
 function pcap_activate(p::Ptr{pcap_t})::Int32
     # Activates a capture handle
-    ccall((:pcap_activate, "libpcap"), Int8, (Ptr{pcap_t},), p)
+    ccall((:pcap_activate, "libpcap"), Int32, (Ptr{pcap_t},), p)
 end
 
 function pcap_close(p::Ptr{pcap_t})::Nothing
