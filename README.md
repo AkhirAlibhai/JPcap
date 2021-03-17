@@ -26,5 +26,6 @@ https://github.com/the-tcpdump-group/libpcap
 - [ ] Finished sniffing process of packets
 - [ ] Import pcapng files and parse packets
 - [ ] Export sniffed packets as pcapng file
+- [ ] Reformat all the files so that they actually make sense
 - [ ] Performance testing (Elaborte more on this)
 - [ ] Add actual valuable information to this README

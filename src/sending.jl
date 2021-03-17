@@ -1,7 +1,10 @@
+include("types/pktHdrs.jl")
+
 export pcap_create, pcap_activate,
         pcap_close,
         pcap_geterr, pcap_perror,
-        pcap_open_live, pcap_open_dead
+        pcap_open_live, pcap_open_dead,
+        pcap_next
 
 mutable struct pcap_t
 end
@@ -95,4 +98,12 @@ function pcap_open_dead(linktype::Union{Pcap_linktype, Int64}, snaplen::Int64)::
     # Opens a fake pcap_t for compiling filters or opening a capture for output
     ccall((:pcap_open_dead, "libpcap"), Ptr{pcap_t}, (Int32, Int32),
                                                         linktype, snaplen)
+end
+
+function pcap_next(p::Ptr{pcap_t}, h::Ref{pcap_pkthdr})
+    val = ccall((:pcap_next, "libpcap"), Ptr{Cuchar}, (Ptr{pcap_t}, Ref{pcap_pkthdr}), p, h)
+
+    if val == C_NULL
+        println("An error occured, or no packets were read from the live capture device")
+    end
 end
