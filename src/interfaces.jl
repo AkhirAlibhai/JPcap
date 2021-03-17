@@ -5,8 +5,10 @@ export pcap_lookupdev,
         pcap_findalldevs, pcap_freealldevs,
         j_pcap_if_t, j_pcap_addr, j_sockaddr
 
+"""
+    Returns the name of the default device, if it exists
+"""
 function pcap_lookupdev()::String
-    # Returns the name of the default device, if it exists
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     dev = ccall((:pcap_lookupdev, "libpcap"), Ptr{Int8}, (Ptr{UInt8},), err)
@@ -120,8 +122,10 @@ struct j_pcap_if_t
     end
 end
 
+"""
+    Returns a list of all devices
+"""
 function pcap_findalldevs()::Ptr{pcap_if_t}
-    # Returns a list of all devices
     devs = Ref{pcap_if_t}()
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
@@ -135,7 +139,9 @@ function pcap_findalldevs()::Ptr{pcap_if_t}
     devs[].next # Call unsafe_load on it to access
 end
 
+"""
+    Frees the memory allocated to the Ptr{pcap_if_t}
+"""
 function pcap_freealldevs(alldevs::Ptr{pcap_if_t})::Nothing
-    # Frees the memory allocated to the Ptr{pcap_if_t}
     ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), alldevs)
 end
