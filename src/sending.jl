@@ -4,11 +4,13 @@ export pcap_create, pcap_activate,
         pcap_close,
         pcap_geterr, pcap_perror,
         pcap_open_live, pcap_open_dead,
-        pcap_next
+        pcap_next, pcap_next_ex
 
 mutable struct pcap_t
 end
 
+# TODO: Think about whether to return nothing on C_NULL, or just leave it to the user
+# pcap_create, pcap_open_live, pcap_open_dead, pcap_next
 """
     Creates a live capture handle for the given interface
 """
@@ -21,7 +23,6 @@ function pcap_create(source::String)::Ptr{pcap_t}
     if loaded_handle == C_NULL
         println("Error occured when attempting to create live capture handle: ",
                 unsafe_string(pointer(err)))
-        return nothing
     end
     handle
 end
@@ -69,7 +70,7 @@ end
 """
     Opens a device for capturing
 """
-function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::Int64)::Union{Ptr{pcap_t}, Nothing}
+function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::Int64)::Ptr{pcap_t}
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     handle = ccall((:pcap_open_live, "libpcap"), Ptr{pcap_t}, (Cstring, Int32, Int32, Int32,
@@ -78,7 +79,6 @@ function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::I
     if handle == C_NULL
         println("Error occured when attempting to create live capture handle: ",
                 unsafe_string(pointer(err)))
-        return nothing
     end
     handle
 end
@@ -107,7 +107,7 @@ end
 """
     Opens a fake pcap_t for compiling filters or opening a capture for output
 """
-function pcap_open_dead(linktype::Union{Pcap_linktype, Int64}, snaplen::Int64)::Union{Ptr{pcap_t}, Nothing}
+function pcap_open_dead(linktype::Union{Pcap_linktype, Int64}, snaplen::Int64)::Ptr{pcap_t}
     ccall((:pcap_open_dead, "libpcap"), Ptr{pcap_t}, (Int32, Int32),
                                                         linktype, snaplen)
 end
@@ -115,10 +115,19 @@ end
 """
     Reads the next packet from a pcap_t
 """
-function pcap_next(p::Ptr{pcap_t}, h::Ref{pcap_pkthdr})
+function pcap_next(p::Ptr{pcap_t}, h::Ref{pcap_pkthdr})::Ptr{UInt8}
     val = ccall((:pcap_next, "libpcap"), Ptr{Cuchar}, (Ptr{pcap_t}, Ref{pcap_pkthdr}), p, h)
 
     if val == C_NULL
         println("An error occured, or no packets were read from the live capture device")
     end
+    val
+end
+
+"""
+    Reads the next packet from a pcap_t
+"""
+function pcap_next_ex(p::Ptr{pcap_t}, pkt_header::Ref{pcap_pkthdr}, pkt_data::Ref{UInt8})::Int32
+    val = ccall((:pcap_next_ex, "libpcap"), Int32, (Ptr{pcap_t}, Ref{pcap_pkthdr},
+                                                    Ref{UInt8}), p, pkt_header, pkt_data)
 end
