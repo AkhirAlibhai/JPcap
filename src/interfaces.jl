@@ -1,4 +1,5 @@
 include("constants.jl")
+include("errors.jl")
 
 export pcap_lookupdev,
         sockaddr, pcap_addr, pcap_if_t,
@@ -14,9 +15,7 @@ function pcap_lookupdev()::String
     dev = ccall((:pcap_lookupdev, "libpcap"), Ptr{Int8}, (Ptr{UInt8},), err)
 
     if dev == C_NULL
-        println("Could not find default device: ",
-                unsafe_string(pointer(err)))
-        return nothing
+        throw(PcapDeviceError(unsafe_string(pointer(err))))
     end
     unsafe_string(dev)
 end
@@ -132,9 +131,7 @@ function pcap_findalldevs()::Ptr{pcap_if_t}
     val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{pcap_if_t}, Ptr{UInt8}), devs, err)
 
     if val == PCAP_ERROR
-        println("Error occured when looking up all devices: ",
-                unsafe_string(pointer(err)))
-        return nothing
+        throw(PcapDeviceError(unsafe_string(pointer(err))))
     end
     devs[].next # Call unsafe_load on it to access
 end

@@ -1,4 +1,5 @@
 include("types/pktHdrs.jl")
+include("errors.jl")
 
 export pcap_create, pcap_activate,
         pcap_close,
@@ -9,8 +10,6 @@ export pcap_create, pcap_activate,
 mutable struct pcap_t
 end
 
-# TODO: Think about whether to return nothing on C_NULL, or just leave it to the user
-# pcap_create, pcap_open_live, pcap_open_dead, pcap_next
 """
     Creates a live capture handle for the given interface
 """
@@ -21,8 +20,7 @@ function pcap_create(source::String)::Ptr{pcap_t}
 
     loaded_handle = unsafe_load(handle)
     if loaded_handle == C_NULL
-        println("Error occured when attempting to create live capture handle: ",
-                unsafe_string(pointer(err)))
+        throw(PcapCreateHandleError(unsafe_string(pointer(err))))
     end
     handle
 end
@@ -77,8 +75,7 @@ function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::I
                                         Ptr{UInt8}), device, snaplen, promisc, to_ms, err)
 
     if handle == C_NULL
-        println("Error occured when attempting to create live capture handle: ",
-                unsafe_string(pointer(err)))
+        throw(PcapCreateHandleError(unsafe_string(pointer(err))))
     end
     handle
 end
@@ -119,7 +116,7 @@ function pcap_next(p::Ptr{pcap_t}, h::Ref{pcap_pkthdr})::Ptr{UInt8}
     val = ccall((:pcap_next, "libpcap"), Ptr{Cuchar}, (Ptr{pcap_t}, Ref{pcap_pkthdr}), p, h)
 
     if val == C_NULL
-        println("An error occured, or no packets were read from the live capture device")
+        throw(PcapPacketCaptureTimeoutError())
     end
     val
 end
