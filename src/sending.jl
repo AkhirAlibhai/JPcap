@@ -142,9 +142,8 @@ const pcap_handler = pcap_handler_def{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}, Cvoid
 
 """
     Process packets from a live capture or savefile
-    Takes in a callback that is of subtype pcap_handler
 """
-function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler_def}, user::UInt8)::Int32
+function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::UInt8)::Int32
     callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
     pcap_loop(p, cnt, callback_c, user)
 
@@ -152,7 +151,6 @@ end
 
 """
     Process packets from a live capture or savefile
-    Takes in a callback that is of generic function, and then verifies the parameters
 """
 function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::UInt8)::Int32
     if hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}}) == false
@@ -165,7 +163,6 @@ end
 
 """
     Process packets from a live capture or savefile
-    Takes in a callback that is a CFunction
 """
 function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::UInt8)::Int32
     ccall((:pcap_loop, "libpcap"), Int32, (Ptr{pcap_t}, Int32, Ptr{Cvoid}, Cuchar), 
