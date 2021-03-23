@@ -7,7 +7,7 @@ export pcap_create, pcap_activate,
         pcap_open_live, pcap_open_dead,
         pcap_next, pcap_next_ex,
         pcap_handler,
-        pcap_loop,
+        pcap_loop, pcap_dispatch,
         pcap_breakloop
 
 mutable struct pcap_t
@@ -146,14 +146,13 @@ const pcap_handler = pcap_handler_def{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}, Cvoid
 function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::UInt8)::Int32
     callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
     pcap_loop(p, cnt, callback_c, user)
-
 end
 
 """
     Process packets from a live capture or savefile
 """
 function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::UInt8)::Int32
-    if hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}}) == false
+    if ~hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
 
@@ -166,6 +165,34 @@ end
 """
 function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::UInt8)::Int32
     ccall((:pcap_loop, "libpcap"), Int32, (Ptr{pcap_t}, Int32, Ptr{Cvoid}, Cuchar), 
+                                                p, cnt, callback, user)
+end
+
+"""
+    Process packets from a live capture or savefile
+"""
+function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::UInt8)::Int32
+    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
+    pcap_dispatch(p, cnt, callback_c, user)
+end
+
+"""
+    Process packets from a live capture or savefile
+"""
+function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::UInt8)::Int32
+    if ~hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
+        throw(PcapCallbackInvalidParametersError())
+    end
+
+    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
+    pcap_dispatch(p, cnt, callback_c, user)
+end
+
+"""
+    Process packets from a live capture or savefile
+"""
+function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::UInt8)::Int32
+    ccall((:pcap_dispatch, "libpcap"), Int32, (Ptr{pcap_t}, Int32, Ptr{Cvoid}, Cuchar),
                                                 p, cnt, callback, user)
 end
 
