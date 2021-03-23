@@ -5,7 +5,9 @@ export pcap_create, pcap_activate,
         pcap_close,
         pcap_geterr, pcap_perror,
         pcap_open_live, pcap_open_dead,
-        pcap_next, pcap_next_ex
+        pcap_next, pcap_next_ex,
+        pcap_handler,
+        pcap_loop
 
 mutable struct pcap_t
 end
@@ -60,8 +62,10 @@ function pcap_geterr(p::Ptr{pcap_t})::String
     unsafe_string(ccall((:pcap_geterr, "libpcap"), Ptr{Int8}, (Ptr{pcap_t},), p))
 end
 
+"""
+    Prints the error message for the given Ptr{pcap_t}
+"""
 function pcap_perror(p::Ptr{pcap_t})::Nothing
-    # Prints the error message for the given Ptr{pcap_t}
     println(pcap_geterr(p))
 end
 
@@ -125,6 +129,44 @@ end
     Reads the next packet from a pcap_t
 """
 function pcap_next_ex(p::Ptr{pcap_t}, pkt_header::Ref{pcap_pkthdr}, pkt_data::Ref{UInt8})::Int32
-    val = ccall((:pcap_next_ex, "libpcap"), Int32, (Ptr{pcap_t}, Ref{pcap_pkthdr},
-                                                    Ref{UInt8}), p, pkt_header, pkt_data)
+    ccall((:pcap_next_ex, "libpcap"), Int32, (Ptr{pcap_t}, Ref{pcap_pkthdr},
+                                                Ref{UInt8}), p, pkt_header, pkt_data)
+end
+
+# callback type for pcap_loop
+abstract type pcap_handler_def{T1, T2, T3, S}
+end
+
+const pcap_handler = pcap_handler_def{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}, Cvoid}
+
+"""
+    Process packets from a live capture or savefile
+    Takes in a callback that is of subtype pcap_handler
+"""
+function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler_def}, user::UInt8)::Int32
+    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
+    pcap_loop(p, cnt, callback_c, user)
+
+end
+
+"""
+    Process packets from a live capture or savefile
+    Takes in a callback that is of generic function, and then verifies the parameters
+"""
+function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::UInt8)::Int32
+    if hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}}) == false
+        throw(PcapCallbackInvalidParametersError())
+    end
+
+    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
+    pcap_loop(p, cnt, callback_c, user)
+end
+
+"""
+    Process packets from a live capture or savefile
+    Takes in a callback that is a CFunction
+"""
+function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::UInt8)::Int32
+    ccall((:pcap_loop, "libpcap"), Int32, (Ptr{pcap_t}, Int32, Ptr{Cvoid}, Cuchar), 
+                                                p, cnt, callback, user)
 end
