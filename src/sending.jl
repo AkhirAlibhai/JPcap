@@ -7,7 +7,8 @@ export pcap_create, pcap_activate,
         pcap_open_live, pcap_open_dead,
         pcap_next, pcap_next_ex,
         pcap_handler,
-        pcap_loop
+        pcap_loop,
+        pcap_breakloop
 
 mutable struct pcap_t
 end
@@ -169,4 +170,11 @@ end
 function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::UInt8)::Int32
     ccall((:pcap_loop, "libpcap"), Int32, (Ptr{pcap_t}, Int32, Ptr{Cvoid}, Cuchar), 
                                                 p, cnt, callback, user)
+end
+
+"""
+    Force a pcap_dispatch() or pcap_loop() call to return
+"""
+function pcap_breakloop(p::Ptr{pcap_t})::Nothing
+    ccall((:pcap_breakloop, "libpcap"), Cvoid, (Ptr{pcap_t},), p)
 end
