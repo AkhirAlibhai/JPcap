@@ -8,7 +8,8 @@ export pcap_create, pcap_activate,
         pcap_next, pcap_next_ex,
         pcap_handler,
         pcap_loop, pcap_dispatch,
-        pcap_breakloop
+        pcap_breakloop,
+        pcap_setnonblock, pcap_getnonblock
 
 mutable struct pcap_t
 end
@@ -201,4 +202,34 @@ end
 """
 function pcap_breakloop(p::Ptr{pcap_t})::Nothing
     ccall((:pcap_breakloop, "libpcap"), Cvoid, (Ptr{pcap_t},), p)
+end
+
+"""
+    Set the state of non-blocking mode on a capture device
+"""
+function pcap_setnonblock(p::Ptr{pcap_t}, nonblock::Int64)
+    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
+
+    val = ccall((:pcap_setnonblock, "libpcap"), Int32,
+                (Ptr{pcap_t}, Cint, Ptr{UInt8}), p, nonblock, err)
+
+    if val == -1
+       throw(PcapSetNonBlockError(err))
+    end
+    val
+end
+
+"""
+    Get the state of non-blocking mode on a capture device
+"""
+function pcap_getnonblock(p::Ptr{pcap_t})
+    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
+
+    val = ccall((:pcap_getnonblock, "libpcap"), Int32,
+                (Ptr{pcap_t}, Ptr{UInt8}), p, err)
+
+    if val == -1
+       throw(PcapGetNonBlockError(err))
+    end
+    val
 end
