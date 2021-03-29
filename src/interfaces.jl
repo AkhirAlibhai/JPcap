@@ -7,7 +7,7 @@ export pcap_lookupdev,
         j_pcap_if_t, j_pcap_addr, j_sockaddr
 
 """
-    Returns the name of the default device, if it exists
+    Return the name of the default device, if it exists
 """
 function pcap_lookupdev()::String
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
@@ -122,7 +122,7 @@ struct j_pcap_if_t
 end
 
 """
-    Returns a list of all devices
+    Return a list of all devices
 """
 function pcap_findalldevs()::Ptr{pcap_if_t}
     devs = Ref{pcap_if_t}()
@@ -137,7 +137,7 @@ function pcap_findalldevs()::Ptr{pcap_if_t}
 end
 
 """
-    Frees the memory allocated to the Ptr{pcap_if_t}
+    Free the memory allocated to the Ptr{pcap_if_t}
 """
 function pcap_freealldevs(alldevs::Ptr{pcap_if_t})::Nothing
     ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), alldevs)

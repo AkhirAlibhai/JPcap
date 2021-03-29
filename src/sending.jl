@@ -15,7 +15,7 @@ mutable struct pcap_t
 end
 
 """
-    Creates a live capture handle for the given interface
+    Create a live capture handle for the given interface
 """
 function pcap_create(source::String)::Ptr{pcap_t}
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
@@ -44,35 +44,35 @@ const PCAP_ERROR_IFACE_NOT_UP =     -9  # interface isn't up
 const PCAP_WARNING_PROMISC_NOTSUP = 2	# this device doesn't support promiscuous mode
 
 """
-    Activates a capture handle
+    Activate a capture handle
 """
 function pcap_activate(p::Ptr{pcap_t})::Int32
     ccall((:pcap_activate, "libpcap"), Int32, (Ptr{pcap_t},), p)
 end
 
 """
-    Closes the capture device
+    Close the capture device
 """
 function pcap_close(p::Ptr{pcap_t})::Nothing
     ccall((:pcap_close, "libpcap"), Cvoid, (Ptr{pcap_t},), p)
 end
 
 """
-    Gets the error message for the given Ptr{pcap_t}
+    Get the error message for the given Ptr{pcap_t}
 """
 function pcap_geterr(p::Ptr{pcap_t})::String
     unsafe_string(ccall((:pcap_geterr, "libpcap"), Ptr{Int8}, (Ptr{pcap_t},), p))
 end
 
 """
-    Prints the error message for the given Ptr{pcap_t}
+    Print the error message for the given Ptr{pcap_t}
 """
 function pcap_perror(p::Ptr{pcap_t})::Nothing
     println(pcap_geterr(p))
 end
 
 """
-    Opens a device for capturing
+    Open a device for capturing
 """
 function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::Int64)::Ptr{pcap_t}
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
@@ -108,7 +108,7 @@ export DLT_NULL, DLT_EN10MB, DLT_EN3MB, DLT_AX25,
 end
 
 """
-    Opens a fake pcap_t for compiling filters or opening a capture for output
+    Open a fake pcap_t for compiling filters or opening a capture for output
 """
 function pcap_open_dead(linktype::Union{Pcap_linktype, Int64}, snaplen::Int64)::Ptr{pcap_t}
     ccall((:pcap_open_dead, "libpcap"), Ptr{pcap_t}, (Int32, Int32),
@@ -116,7 +116,7 @@ function pcap_open_dead(linktype::Union{Pcap_linktype, Int64}, snaplen::Int64)::
 end
 
 """
-    Reads the next packet from a pcap_t
+    Read the next packet from a pcap_t
 """
 function pcap_next(p::Ptr{pcap_t}, h::Ref{pcap_pkthdr})::Ptr{UInt8}
     val = ccall((:pcap_next, "libpcap"), Ptr{Cuchar}, (Ptr{pcap_t}, Ref{pcap_pkthdr}), p, h)
@@ -128,7 +128,7 @@ function pcap_next(p::Ptr{pcap_t}, h::Ref{pcap_pkthdr})::Ptr{UInt8}
 end
 
 """
-    Reads the next packet from a pcap_t
+    Read the next packet from a pcap_t
 """
 function pcap_next_ex(p::Ptr{pcap_t}, pkt_header::Ref{pcap_pkthdr}, pkt_data::Ref{UInt8})::Int32
     ccall((:pcap_next_ex, "libpcap"), Int32, (Ptr{pcap_t}, Ref{pcap_pkthdr},
