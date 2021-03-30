@@ -10,7 +10,7 @@ export pcap_create, pcap_activate,
         pcap_loop, pcap_dispatch,
         pcap_breakloop,
         pcap_setnonblock, pcap_getnonblock,
-        pcap_compile
+        pcap_compile, pcap_setfilter
 
 mutable struct pcap_t
 end
@@ -145,7 +145,7 @@ const pcap_handler = pcap_handler_def{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}, Cvoid
 """
     Process packets from a live capture or savefile
 """
-function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::UInt8)::Int32
+function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{UInt8, Ptr{Nothing}})::Int32
     callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
     pcap_loop(p, cnt, callback_c, user)
 end
@@ -153,7 +153,7 @@ end
 """
     Process packets from a live capture or savefile
 """
-function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::UInt8)::Int32
+function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
     if ~hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
@@ -165,7 +165,7 @@ end
 """
     Process packets from a live capture or savefile
 """
-function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::UInt8)::Int32
+function pcap_loop(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::Union{UInt8, Ptr{Nothing}})::Int32
     ccall((:pcap_loop, "libpcap"), Int32, (Ptr{pcap_t}, Int32, Ptr{Cvoid}, Cuchar), 
                                                 p, cnt, callback, user)
 end
@@ -173,7 +173,7 @@ end
 """
     Process packets from a live capture or savefile
 """
-function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::UInt8)::Int32
+function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{UInt8, Ptr{Nothing}})::Int32
     callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
     pcap_dispatch(p, cnt, callback_c, user)
 end
@@ -181,7 +181,7 @@ end
 """
     Process packets from a live capture or savefile
 """
-function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::UInt8)::Int32
+function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
     if ~hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
@@ -193,7 +193,7 @@ end
 """
     Process packets from a live capture or savefile
 """
-function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::UInt8)::Int32
+function pcap_dispatch(p::Ptr{pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::Union{UInt8, Ptr{Nothing}})::Int32
     ccall((:pcap_dispatch, "libpcap"), Int32, (Ptr{pcap_t}, Int32, Ptr{Cvoid}, Cuchar),
                                                 p, cnt, callback, user)
 end
@@ -238,9 +238,15 @@ end
 """
     Compile a filter expression
 """
-# TODO: Test this
 function pcap_compile(p::Ptr{pcap_t}, fp::Ref{bpf_program}, str::String, optimize::Int64, netmask::UInt32)
     ccall((:pcap_compile, "libpcap"), Int32, (Ptr{pcap_t}, Ref{bpf_program},
                                                 Cstring, Int32, Cuint),
                                                 p, fp, str, optimize, netmask)
+end
+
+"""
+    Set the filter
+"""
+function pcap_setfilter(p::Ptr{pcap_t}, fp::Ref{bpf_program})
+    ccall((:pcap_setfilter, "libpcap"), Int32, (Ptr{pcap_t}, Ref{bpf_program}), p, fp)
 end
