@@ -9,7 +9,8 @@ export pcap_create, pcap_activate,
         pcap_handler,
         pcap_loop, pcap_dispatch,
         pcap_breakloop,
-        pcap_setnonblock, pcap_getnonblock
+        pcap_setnonblock, pcap_getnonblock,
+        pcap_compile
 
 mutable struct pcap_t
 end
@@ -207,7 +208,7 @@ end
 """
     Set the state of non-blocking mode on a capture device
 """
-function pcap_setnonblock(p::Ptr{pcap_t}, nonblock::Int64)
+function pcap_setnonblock(p::Ptr{pcap_t}, nonblock::Int64)::Int32
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     val = ccall((:pcap_setnonblock, "libpcap"), Int32,
@@ -222,7 +223,7 @@ end
 """
     Get the state of non-blocking mode on a capture device
 """
-function pcap_getnonblock(p::Ptr{pcap_t})
+function pcap_getnonblock(p::Ptr{pcap_t})::Int32
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
     val = ccall((:pcap_getnonblock, "libpcap"), Int32,
@@ -232,4 +233,14 @@ function pcap_getnonblock(p::Ptr{pcap_t})
        throw(PcapGetNonBlockError(err))
     end
     val
+end
+
+"""
+    Compile a filter expression
+"""
+# TODO: Test this
+function pcap_compile(p::Ptr{pcap_t}, fp::Ref{bpf_program}, str::String, optimize::Int64, netmask::UInt32)
+    ccall((:pcap_compile, "libpcap"), Int32, (Ptr{pcap_t}, Ref{bpf_program},
+                                                Cstring, Int32, Cuint),
+                                                p, fp, str, optimize, netmask)
 end
