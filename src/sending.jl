@@ -10,7 +10,8 @@ export pcap_create, pcap_activate,
         pcap_loop, pcap_dispatch,
         pcap_breakloop,
         pcap_setnonblock, pcap_getnonblock,
-        pcap_compile, pcap_setfilter
+        pcap_compile, pcap_setfilter,
+        pcap_freecode
 
 mutable struct pcap_t
 end
@@ -238,7 +239,7 @@ end
 """
     Compile a filter expression
 """
-function pcap_compile(p::Ptr{pcap_t}, fp::Ref{bpf_program}, str::String, optimize::Int64, netmask::UInt32)
+function pcap_compile(p::Ptr{pcap_t}, fp::Ref{bpf_program}, str::String, optimize::Int64, netmask::UInt32)::Int32
     ccall((:pcap_compile, "libpcap"), Int32, (Ptr{pcap_t}, Ref{bpf_program},
                                                 Cstring, Int32, Cuint),
                                                 p, fp, str, optimize, netmask)
@@ -247,6 +248,13 @@ end
 """
     Set the filter
 """
-function pcap_setfilter(p::Ptr{pcap_t}, fp::Ref{bpf_program})
+function pcap_setfilter(p::Ptr{pcap_t}, fp::Ref{bpf_program})::Int32
     ccall((:pcap_setfilter, "libpcap"), Int32, (Ptr{pcap_t}, Ref{bpf_program}), p, fp)
+end
+
+"""
+    Free a BPF program
+"""
+function pcap_freecode(fp::Ref{bpf_program})::Cvoid
+    ccall((:pcap_freecode, "libpcap"), Cvoid, (Ref{bpf_program},), fp)
 end
