@@ -11,7 +11,7 @@ export pcap_create, pcap_activate,
         pcap_breakloop,
         pcap_setnonblock, pcap_getnonblock,
         pcap_compile, pcap_setfilter,
-        pcap_freecode
+        pcap_freecode, pcap_setdirection
 
 mutable struct pcap_t
 end
@@ -95,7 +95,7 @@ end
 export DLT_NULL, DLT_EN10MB, DLT_EN3MB, DLT_AX25,
         DLT_PRONET, DLT_CHAOS, DLT_IEEE802, DLT_ARCNET,
         DLT_SLIP, DLT_PPP, DLT_FDDI
-@enum Pcap_linktype begin
+@enum pcap_linktype begin
     DLT_NULL =      0   # BSD loopback encapsulation
     DLT_EN10MB =    1   # Ethernet (10Mb)
     DLT_EN3MB =     2   # Experimental Ethernet (3Mb)
@@ -112,7 +112,7 @@ end
 """
     Open a fake pcap_t for compiling filters or opening a capture for output
 """
-function pcap_open_dead(linktype::Union{Pcap_linktype, Int64}, snaplen::Int64)::Ptr{pcap_t}
+function pcap_open_dead(linktype::Union{pcap_linktype, Int64}, snaplen::Int64)::Ptr{pcap_t}
     ccall((:pcap_open_dead, "libpcap"), Ptr{pcap_t}, (Int32, Int32),
                                                         linktype, snaplen)
 end
@@ -257,4 +257,22 @@ end
 """
 function pcap_freecode(fp::Ref{bpf_program})::Cvoid
     ccall((:pcap_freecode, "libpcap"), Cvoid, (Ref{bpf_program},), fp)
+end
+
+#=
+    Direction that packets will be captureda from
+    TODO: Move this into another file when it makes sense to
+=#
+export PCAP_D_INOUT, PCAP_D_IN, PCAP_D_OUT
+@enum pcap_direction_t begin
+    PCAP_D_INOUT =  0   # Capture packets received or sent by the device
+    PCAP_D_IN =     1   # Capture packets received by the device
+    PCAP_D_OUT =    2   # Capture packets sent by the device
+end
+
+"""
+    Set the direction for which packets will be captured
+"""
+function pcap_setdirection(p::Ptr{pcap_t}, d::Union{pcap_direction_t, Int64})::Int32
+    ccall((:pcap_setdirection, "libpcap"), Int32, (Ptr{pcap_t}, Int32), p, d)
 end
