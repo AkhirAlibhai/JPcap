@@ -11,7 +11,8 @@ export pcap_create, pcap_activate,
         pcap_breakloop,
         pcap_setnonblock, pcap_getnonblock,
         pcap_compile, pcap_setfilter,
-        pcap_freecode, pcap_setdirection
+        pcap_freecode, pcap_setdirection,
+        pcap_statustostr
 
 mutable struct pcap_t
 end
@@ -275,4 +276,11 @@ end
 """
 function pcap_setdirection(p::Ptr{pcap_t}, d::Union{pcap_direction_t, Int64})::Int32
     ccall((:pcap_setdirection, "libpcap"), Int32, (Ptr{pcap_t}, Int32), p, d)
+end
+
+"""
+    Convert a PCAP_ERROR_ or PCAP_WARNING_ value to a string
+"""
+function pcap_statustostr(error::Int64)::String
+    unsafe_string(ccall((:pcap_statustostr, "libpcap"), Cstring, (Int32,), error))
 end
