@@ -12,7 +12,7 @@ export pcap_create, pcap_activate,
         pcap_setnonblock, pcap_getnonblock,
         pcap_compile, pcap_setfilter,
         pcap_freecode, pcap_setdirection,
-        pcap_statustostr
+        pcap_statustostr, pcap_strerror
 
 mutable struct pcap_t
 end
@@ -283,4 +283,11 @@ end
 """
 function pcap_statustostr(error::Int64)::String
     unsafe_string(ccall((:pcap_statustostr, "libpcap"), Cstring, (Int32,), error))
+end
+
+"""
+    Convert an errno value to a string
+"""
+function pcap_strerror(error::Int64)::String
+    unsafe_string(ccall((:pcap_strerror, "libpcap"), Cstring, (Int32,), error))
 end
