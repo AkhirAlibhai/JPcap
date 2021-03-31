@@ -260,7 +260,7 @@ function pcap_freecode(fp::Ref{bpf_program})::Cvoid
 end
 
 #=
-    Direction that packets will be captureda from
+    Direction that packets will be captured from
     TODO: Move this into another file when it makes sense to
 =#
 export PCAP_D_INOUT, PCAP_D_IN, PCAP_D_OUT
