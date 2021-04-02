@@ -12,6 +12,7 @@ export pcap_create, pcap_activate,
         pcap_setnonblock, pcap_getnonblock,
         pcap_compile, pcap_setfilter,
         pcap_freecode, pcap_setdirection,
+        pcap_inject, pcap_sendpacket,
         pcap_statustostr, pcap_strerror
 
 mutable struct pcap_t
@@ -276,6 +277,22 @@ end
 """
 function pcap_setdirection(p::Ptr{pcap_t}, d::Union{pcap_direction_t, Int64})::Int32
     ccall((:pcap_setdirection, "libpcap"), Int32, (Ptr{pcap_t}, Int32), p, d)
+end
+
+"""
+    Transmit a packet
+"""
+function pcap_inject(p::Ptr{pcap_t}, buf::Ptr{Cvoid}, size::UInt)::Int32
+    ccall((:pcap_inject, "libpcap"), Int32, (Ptr{pcap_t}, Ref{Cvoid}, Csize_t),
+                                                p, buf, size)
+end
+
+"""
+    Transmit a packet
+"""
+function pcap_sendpacket(p::Ptr{pcap_t}, buf::Ptr{UInt8}, size::Int64)::Int32
+    ccall((:pcap_inject, "libpcap"), Int32, (Ptr{pcap_t}, Ptr{Cvoid}, Int32),
+                                                p, buf, size)
 end
 
 """
