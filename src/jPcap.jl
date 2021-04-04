@@ -1,5 +1,7 @@
 module jPcap
 
+include("htons.jl")
+
 include("constants.jl")
 
 include("types/bpf.jl")
