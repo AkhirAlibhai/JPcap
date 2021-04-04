@@ -1,6 +1,6 @@
 module jPcap
 
-include("htons.jl")
+include("helperFunctions.jl")
 
 include("constants.jl")
 
