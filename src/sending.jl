@@ -291,7 +291,7 @@ end
     Transmit a packet
 """
 function pcap_sendpacket(p::Ptr{pcap_t}, buf::Ptr{UInt8}, size::Int64)::Int32
-    ccall((:pcap_inject, "libpcap"), Int32, (Ptr{pcap_t}, Ptr{Cvoid}, Int32),
+    ccall((:pcap_sendpacket, "libpcap"), Int32, (Ptr{pcap_t}, Ptr{Cvoid}, Int32),
                                                 p, buf, size)
 end
 
