@@ -1,8 +1,8 @@
 export TcpHdr, UdpHdr
 
 struct TcpHdr
-    source_port::UInt16
-    destination_port::UInt16
+    src_port::UInt16
+    dest_port::UInt16
     sequence_number::UInt32
     acknowledgment_number::UInt32
     data_offset::UInt8 # 4 bits
@@ -12,8 +12,8 @@ struct TcpHdr
     checksum::UInt16
     urgent_pointer::UInt16
     options::Vector{UInt32}
-    function TcpHdr(new_source_port::UInt16,
-                    new_destination_port::UInt16,
+    function TcpHdr(new_src_port::UInt16,
+                    new_dest_port::UInt16,
                     new_sequence_number::UInt32,
                     new_acknowledgment_number::UInt32,
                     new_data_offset_flags::UInt16,
@@ -25,8 +25,8 @@ struct TcpHdr
         reserved_mask = 0b0000111000000000
         flags_mask = 0b0000000111111111
 
-        new(new_source_port,
-            new_destination_port,
+        new(new_src_port,
+            new_dest_port,
             new_sequence_number,
             new_acknowledgment_number,
             (new_data_offset_flags & data_offset_mask) >> 12,
@@ -42,8 +42,8 @@ struct TcpHdr
 end
 
 struct UdpHdr
-    source_port::UInt16
-    destination_port::UInt16
+    src_port::UInt16
+    dest_port::UInt16
     length::UInt16
     checksum::UInt16
     data::Vector{UInt8}
