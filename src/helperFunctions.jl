@@ -1,6 +1,10 @@
-export htons, inet_to_uint32,
+export htons,
+        inet_to_uint32, uint32_to_inet,
         iface_to_mac
 
+"""
+    Convert values between host and network byte order
+"""
 function htons(hostshort::Int64)::Cushort
     ccall(:htons, Cushort, (Cushort,), convert(UInt16, hostshort))
 end
@@ -9,6 +13,9 @@ struct in_addr
     s_addr::Cuint
 end
 
+"""
+    Convert an ip string into a UInt32
+"""
 function inet_to_uint32(string::String)::UInt32
     addr = Ref{in_addr}()
 
@@ -19,6 +26,14 @@ function inet_to_uint32(string::String)::UInt32
     addr[].s_addr
 end
 
+"""
+    Convert a UInt32 into an ip string
+"""
+function uint32_to_inet(uint32::UInt32)::String
+    addr = in_addr(uint32)
+
+    unsafe_string(ccall(:inet_ntoa, Cstring, (in_addr,), addr))
+end
 
 const IF_NAMESIZE = 16
 
