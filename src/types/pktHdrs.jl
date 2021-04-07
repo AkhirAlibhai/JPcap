@@ -11,6 +11,6 @@ end
 
 struct pcap_pkthdr
 	ts::timeval 	# time stamp
-	caplen::Cuint   # length of portion present
-	len::Cuint      # length this packet (off wire)
+	caplen::Int32   # length of portion present
+	len::Int32      # length this packet (off wire)
 end
