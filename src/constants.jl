@@ -1,19 +1,31 @@
-export PCAP_ERRBUF_SIZE, PCAP_ERROR, PCAP_WARNING,
-        PCAP_NETMASK_UNKNOWN
+export PCAP_ERRBUF_SIZE,
+        PCAP_NETMASK_UNKNOWN,
+        PCAP_ERROR, PCAP_WARNING
 
 const PCAP_ERRBUF_SIZE = 256
 
-const PCAP_ERROR = -1       # generic error code
+const PCAP_NETMASK_UNKNOWN = 0xffffffff
 
-const PCAP_WARNING = 1      # generic warning code
+#=
+    Error codes for the pcap API
+=#
+const PCAP_ERROR = -1                   # generic error code
+const PCAP_ERROR_ACTIVATED = -4         # the operation can't be performed on already activated captures
+const PCAP_ERROR_NO_SUCH_DEVICE = -5	# no such device exists
+const PCAP_ERROR_RFMON_NOTSUP = -6	    # this device doesn't support rfmon (monitor) mode
+const PCAP_ERROR_PERM_DENIED = -8	    # no permission to open the device
+const PCAP_ERROR_IFACE_NOT_UP = -9      # interface isn't up
 
-const PCAP_NETMASK_UNKNOWN =    0xffffffff
-
+#=
+    Warning codes for the pcap API
+=#
+const PCAP_WARNING = 1                  # generic warning code
+const PCAP_WARNING_PROMISC_NOTSUP = 2	# this device doesn't support promiscuous mode
 
 #=
     ARP protocol HARDWARE identifiers
 =#
-const ARPHRD_NETROM =   0       # From KA9Q: NET/ROM pseudo
+const ARPHRD_NETROM = 0         # From KA9Q: NET/ROM pseudo
 const ARPHRD_ETHER = 1          # Ethernet 10/100Mbps
 const ARPHRD_EETHER = 2         # Experimental Ethernet
 const ARPHRD_AX25 = 3           # AX.25 Level 2
@@ -26,8 +38,8 @@ const ARPHRD_DLCI = 15          # Frame Relay DLCI
 const ARPHRD_ATM = 19           # ATM
 const ARPHRD_METRICOM = 23	    # Metricom STRIP (new IANA id)
 const ARPHRD_IEEE1394 = 24      # IEEE 1394 IPv4 - RFC 2734
-const ARPHRD_EUI64      = 27    # EUI-64
-const ARPHRD_INFINIBAND	= 32    # InfiniBand
+const ARPHRD_EUI64 = 27         # EUI-64
+const ARPHRD_INFINIBAND = 32    # InfiniBand
 
 #=
     ARP protocol opcodes
