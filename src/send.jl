@@ -28,7 +28,7 @@ end
     Process packets from a live capture or savefile
 """
 function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
-    if ~hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
+    if !hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
 
@@ -56,7 +56,7 @@ end
     Process packets from a live capture or savefile
 """
 function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
-    if ~hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
+    if !hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
 
