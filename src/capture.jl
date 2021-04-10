@@ -7,7 +7,7 @@ export pcap_next, pcap_next_ex,
         pcap_breakloop,
         pcap_setnonblock, pcap_getnonblock,
         pcap_compile, pcap_setfilter,
-        pcap_freecode, pcap_setdirection,
+        pcap_freecode, pcap_setdirection
 
 """
     Read the next packet from a Pcap_t
