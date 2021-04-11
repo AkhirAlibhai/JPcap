@@ -7,7 +7,9 @@ export pcap_next, pcap_next_ex,
         pcap_breakloop,
         pcap_setnonblock, pcap_getnonblock,
         pcap_compile, pcap_setfilter,
-        pcap_freecode, pcap_setdirection
+        pcap_freecode, pcap_setdirection,
+        Pcap_dumper_t,
+        pcap_dump_open
 
 """
     Read the next packet from a Pcap_t
@@ -168,4 +170,11 @@ end
 """
 function pcap_setdirection(p::Ptr{Pcap_t}, d::Union{Pcap_direction_t, Int64})::Int32
     ccall((:pcap_setdirection, "libpcap"), Int32, (Ptr{Pcap_t}, Int32), p, d)
+end
+
+mutable struct Pcap_dumper_t
+end
+
+function pcap_dump_open(p::Ptr{Pcap_t}, fname::String)::Ptr{Union{Pcap_dumper_t, Nothing}}
+    ccall((:pcap_dump_open, "libpcap"), Ptr{Pcap_dumper_t}, (Ptr{Pcap_t}, Cstring), p, fname)
 end
