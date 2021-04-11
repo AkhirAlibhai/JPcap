@@ -50,9 +50,10 @@ function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{U
     if !hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
-
-    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
-    pcap_loop(p, cnt, callback_c, user)
+    pcap_loop(p,
+                cnt,
+                @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8})),
+                user)
 end
 
 """
@@ -78,9 +79,10 @@ function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Uni
     if !hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
-
-    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
-    pcap_dispatch(p, cnt, callback_c, user)
+    pcap_dispatch(p,
+                    cnt,
+                    @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8})),
+                    user)
 end
 
 """
