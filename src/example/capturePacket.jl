@@ -38,8 +38,8 @@ end
 
 pcap_freecode(program)
 
-# Compiling the callback
-callback_c =  @cfunction(callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
-
 # Capturing a packet
-ret = pcap_loop(handle, 1, callback_c, C_NULL)
+ret = pcap_loop(handle,
+                    1,
+                    @cfunction(callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8})),
+                    C_NULL)
