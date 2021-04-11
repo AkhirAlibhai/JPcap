@@ -9,7 +9,7 @@ export pcap_next, pcap_next_ex,
         pcap_compile, pcap_setfilter,
         pcap_freecode, pcap_setdirection,
         Pcap_dumper_t,
-        pcap_dump_open
+        pcap_dump_open, pcap_dump_close
 
 """
     Read the next packet from a Pcap_t
@@ -175,6 +175,10 @@ end
 mutable struct Pcap_dumper_t
 end
 
-function pcap_dump_open(p::Ptr{Pcap_t}, fname::String)::Ptr{Union{Pcap_dumper_t, Nothing}}
+function pcap_dump_open(p::Ptr{Pcap_t}, fname::String)::Ptr{Pcap_dumper_t}
     ccall((:pcap_dump_open, "libpcap"), Ptr{Pcap_dumper_t}, (Ptr{Pcap_t}, Cstring), p, fname)
+end
+
+function pcap_dump_close(p::Ptr{Pcap_dumper_t})::Cvoid
+    ccall((:pcap_dump_close, "libpcap"), Cvoid, (Ptr{Pcap_dumper_t}, ), p)
 end
