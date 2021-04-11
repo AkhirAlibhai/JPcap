@@ -3,7 +3,8 @@ include("errors.jl")
 
 export pcap_create,
         pcap_activate, pcap_close,
-        pcap_open_live, pcap_open_dead
+        pcap_open_live, pcap_open_dead,
+        pcap_open_offline
 
 """
     Create a live capture handle for the given interface
@@ -75,4 +76,19 @@ end
 function pcap_open_dead(linktype::Union{Pcap_linktype, Int64}, snaplen::Int64)::Ptr{Pcap_t}
     ccall((:pcap_open_dead, "libpcap"), Ptr{Pcap_t}, (Int32, Int32),
                                                         linktype, snaplen)
+end
+
+"""
+    Open a saved capture file for reading
+"""
+function pcap_open_offline(fname::String)::Ptr{Pcap_t}
+    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
+
+    handle = ccall((:pcap_open_offline, "libpcap"), Ptr{Pcap_t}, (Cstring, Ptr{UInt8}),
+                                                                    fname, err)
+
+    if handle == C_NULL
+        throw(PcapCreateHandleError(unsafe_string(pointer(err))))
+    end
+    handle
 end
