@@ -15,8 +15,8 @@ export pcap_next, pcap_next_ex,
 """
     Read the next packet from a Pcap_t
 """
-function pcap_next(p::Ptr{Pcap_t}, h::Ref{pcap_pkthdr})::Ptr{UInt8}
-    val = ccall((:pcap_next, "libpcap"), Ptr{Cuchar}, (Ptr{Pcap_t}, Ref{pcap_pkthdr}), p, h)
+function pcap_next(p::Ptr{Pcap_t}, h::Ref{Pcap_pkthdr})::Ptr{UInt8}
+    val = ccall((:pcap_next, "libpcap"), Ptr{Cuchar}, (Ptr{Pcap_t}, Ref{Pcap_pkthdr}), p, h)
 
     if val == C_NULL
         throw(PcapPacketCaptureTimeoutError())
@@ -27,8 +27,8 @@ end
 """
     Read the next packet from a Pcap_t
 """
-function pcap_next_ex(p::Ptr{Pcap_t}, pkt_header::Ref{pcap_pkthdr}, pkt_data::Ref{UInt8})::Int32
-    ccall((:pcap_next_ex, "libpcap"), Int32, (Ptr{Pcap_t}, Ref{pcap_pkthdr},
+function pcap_next_ex(p::Ptr{Pcap_t}, pkt_header::Ref{Pcap_pkthdr}, pkt_data::Ref{UInt8})::Int32
+    ccall((:pcap_next_ex, "libpcap"), Int32, (Ptr{Pcap_t}, Ref{Pcap_pkthdr},
                                                 Ref{UInt8}), p, pkt_header, pkt_data)
 end
 
@@ -36,13 +36,13 @@ end
 abstract type pcap_handler_def{T1, T2, T3, S}
 end
 
-const pcap_handler = pcap_handler_def{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}, Cvoid}
+const pcap_handler = pcap_handler_def{UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}, Cvoid}
 
 """
     Process packets from a live capture or savefile
 """
 function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{UInt8, Ptr{Nothing}})::Int32
-    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
+    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}))
     pcap_loop(p, cnt, callback_c, user)
 end
 
@@ -50,12 +50,12 @@ end
     Process packets from a live capture or savefile
 """
 function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
-    if !hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
+    if !hasmethod(callback, Tuple{UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
     pcap_loop(p,
                 cnt,
-                @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8})),
+                @cfunction($callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8})),
                 user)
 end
 
@@ -71,7 +71,7 @@ end
     Process packets from a live capture or savefile
 """
 function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{UInt8, Ptr{Nothing}})::Int32
-    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}))
+    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}))
     pcap_dispatch(p, cnt, callback_c, user)
 end
 
@@ -79,12 +79,12 @@ end
     Process packets from a live capture or savefile
 """
 function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
-    if !hasmethod(callback, Tuple{UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8}})
+    if !hasmethod(callback, Tuple{UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
     pcap_dispatch(p,
                     cnt,
-                    @cfunction($callback, Cvoid, (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8})),
+                    @cfunction($callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8})),
                     user)
 end
 
@@ -193,7 +193,7 @@ end
 """
     Write a packet to a capture file
 """
-function pcap_dump(user::UInt8, h::Ptr{pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
-    ccall((:pcap_dump, "libpcap"), Cvoid, (Cuchar, Ptr{pcap_pkthdr}, Ptr{UInt8}),
+function pcap_dump(user::UInt8, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
+    ccall((:pcap_dump, "libpcap"), Cvoid, (Cuchar, Ptr{Pcap_pkthdr}, Ptr{UInt8}),
                                             user, h, packet)
 end

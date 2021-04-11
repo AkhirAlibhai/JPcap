@@ -28,7 +28,7 @@ Base.showerror(io::IO, e::PcapPacketCaptureTimeoutError) = print(io, "Error occu
 struct PcapCallbackInvalidParametersError <: Exception
 end
 
-Base.showerror(io::IO, e::PcapCallbackInvalidParametersError) = print(io, "Callback function has incorrect parameters. The correct parameters are (UInt8, Ptr{pcap_pkthdr}, Ptr{UInt8})")
+Base.showerror(io::IO, e::PcapCallbackInvalidParametersError) = print(io, "Callback function has incorrect parameters. The correct parameters are (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8})")
 
 struct PcapSetNonBlockError <: Exception
     var::String
