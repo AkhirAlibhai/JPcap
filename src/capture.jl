@@ -9,7 +9,8 @@ export pcap_next, pcap_next_ex,
         pcap_compile, pcap_setfilter,
         pcap_freecode, pcap_setdirection,
         Pcap_dumper_t,
-        pcap_dump_open, pcap_dump_close
+        pcap_dump_open, pcap_dump_close,
+        pcap_dump
 
 """
     Read the next packet from a Pcap_t
@@ -175,10 +176,24 @@ end
 mutable struct Pcap_dumper_t
 end
 
+"""
+    Open a file to which to write packets
+"""
 function pcap_dump_open(p::Ptr{Pcap_t}, fname::String)::Ptr{Pcap_dumper_t}
     ccall((:pcap_dump_open, "libpcap"), Ptr{Pcap_dumper_t}, (Ptr{Pcap_t}, Cstring), p, fname)
 end
 
+"""
+    Close a savefile being written to
+"""
 function pcap_dump_close(p::Ptr{Pcap_dumper_t})::Cvoid
     ccall((:pcap_dump_close, "libpcap"), Cvoid, (Ptr{Pcap_dumper_t}, ), p)
+end
+
+"""
+    Write a packet to a capture file
+"""
+function pcap_dump(user::UInt8, h::Ptr{pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
+    ccall((:pcap_dump, "libpcap"), Cvoid, (Cuchar, Ptr{pcap_pkthdr}, Ptr{UInt8}),
+                                            user, h, packet)
 end
