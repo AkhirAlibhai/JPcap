@@ -1,5 +1,5 @@
-include("../jPcap.jl")
-using .jPcap
+include("../JPcap.jl")
+using .JPcap
 
 """
     Print all capture devices on the device 

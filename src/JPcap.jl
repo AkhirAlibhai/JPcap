@@ -1,4 +1,4 @@
-module jPcap
+module JPcap
 
 include("helperFunctions.jl")
 

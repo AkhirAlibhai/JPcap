@@ -1,5 +1,5 @@
-include("../jPcap.jl")
-using .jPcap
+include("../JPcap.jl")
+using .JPcap
 
 devs = pcap_findalldevs()
 name = j_pcap_if_t(devs).name
