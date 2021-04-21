@@ -21,8 +21,6 @@ function pcap_create(source::String)::Ptr{Pcap_t}
     handle
 end
 
-Base.convert(::Type{Ptr{Pcap_t}}, iface::String) = pcap_create(iface)
-
 """
     Activate a capture handle
 """
@@ -51,6 +49,8 @@ function pcap_open_live(device::String, snaplen::Int64, promisc::Int64, to_ms::I
     end
     handle
 end
+
+Base.convert(::Type{Ptr{Pcap_t}}, iface::String) = pcap_open_live(iface, 65535, 1, -1)
 
 #=
     Link-layer header type codes
