@@ -87,3 +87,11 @@ const ETHER_CRC_LEN = 4                                 # bytes in CRC field
 const ETHER_HDR_LEN = ETH_HLEN                          # total octets in header
 const ETHER_MIN_LEN = (ETH_ZLEN + ETHER_CRC_LEN)        # min packet length
 const ETHER_MAX_LEN = (ETH_FRAME_LEN + ETHER_CRC_LEN)   # max packet length
+
+#=
+    IP protocol numbers
+=#
+export IP_TCP, IP_UDP
+
+const IP_TCP = 6        # Transmission Control Protocol
+const IP_UDP = 17       # User Datagram Protocol

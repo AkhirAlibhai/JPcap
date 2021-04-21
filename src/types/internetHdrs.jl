@@ -1,6 +1,7 @@
-include("./ethernetHdr.jl")
+include("ethernetHdr.jl")
 
-export Ipv4Hdr
+export Ipv4Hdr,
+        ipv4hdr_version, ipv4hdr_ihl
 
 struct Ipv4Hdr
     version_ihl::UInt8              # Version = 0-3, IHL = 4-7
@@ -17,4 +18,12 @@ struct Ipv4Hdr
     function Ipv4Hdr(packet::Ptr{UInt8})::Ipv4Hdr
         unsafe_load(Ptr{Ipv4Hdr}(packet + sizeof(EtherHdr)))
     end
+end
+
+function ipv4hdr_version(iph::Ipv4Hdr)::UInt8
+    iph.version_ihl >> 4
+end
+
+function ipv4hdr_ihl(iph::Ipv4Hdr)::UInt8
+    iph.version_ihl & 0b00001111
 end

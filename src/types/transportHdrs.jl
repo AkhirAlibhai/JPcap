@@ -1,3 +1,6 @@
+include("ethernetHdr.jl")
+include("internetHdrs.jl")
+
 export TcpHdr, UdpHdr
 
 struct TcpHdr
@@ -13,6 +16,11 @@ struct TcpHdr
     checksum::UInt16
     urgent_pointer::UInt16
     options::Vector{UInt32}
+    function TcpHdr(packet::Ptr{UInt8})::TcpHdr
+        unsafe_load(Ptr{TcpHdr}(packet +
+                                ipv4hdr_ihl(Ipv4Hdr(packet))*4 +
+                                sizeof(EtherHdr)))
+    end
     # function TcpHdr(new_src_port::UInt16,
     #                 new_dest_port::UInt16,
     #                 new_sequence_number::UInt32,
@@ -48,4 +56,9 @@ struct UdpHdr
     length::UInt16
     checksum::UInt16
     data::Vector{UInt8}
+    function UdpHdr(packet::Ptr{UInt8})::UdpHdr
+        unsafe_load(Ptr{UdpHdr}(packet +
+                                ipv4hdr_ihl(Ipv4Hdr(packet))*4 +
+                                sizeof(EtherHdr)))
+    end
 end
