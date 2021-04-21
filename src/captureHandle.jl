@@ -21,6 +21,8 @@ function pcap_create(source::String)::Ptr{Pcap_t}
     handle
 end
 
+Base.convert(::Type{Ptr{Pcap_t}}, iface::String) = pcap_create(iface)
+
 """
     Activate a capture handle
 """
