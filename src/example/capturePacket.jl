@@ -11,7 +11,7 @@ handle = pcap_open_live(name, 0, 1, 100)
 # Defining a callback function for capturing packets
 function callback(user::UInt8, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
     # Need to skip the Ethernet header
-    pkt = unsafe_load(Ptr{Ipv4Hdr}(packet + sizeof(EtherHdr)))
+    pkt = Ipv4Hdr(packet)
 
     println("Got packet from ", uint32_to_inet(pkt.src_ip), " going to ", uint32_to_inet(pkt.dest_ip))
     return nothing

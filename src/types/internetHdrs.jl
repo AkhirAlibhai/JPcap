@@ -1,3 +1,5 @@
+include("./ethernetHdr.jl")
+
 export Ipv4Hdr
 
 struct Ipv4Hdr
@@ -12,4 +14,7 @@ struct Ipv4Hdr
     src_ip::UInt32                  # IPv4
     dest_ip::UInt32                 # IPv4
     options::AbstractString         # TODO: Think of better way to represent
+    function Ipv4Hdr(packet::Ptr{UInt8})::Ipv4Hdr
+        unsafe_load(Ptr{Ipv4Hdr}(packet + sizeof(EtherHdr)))
+    end
 end

@@ -13,7 +13,7 @@ while true
 
         println("Packet ", count)
 
-        iph = unsafe_load(Ptr{Ipv4Hdr}(packet + sizeof(EtherHdr)))
+        iph = Ipv4Hdr(packet)
         println("Got a packet from ", uint32_to_inet(iph.src_ip),
                     " going to ", uint32_to_inet(iph.dest_ip))
     catch
