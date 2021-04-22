@@ -36,41 +36,41 @@ end
 abstract type pcap_handler_def{T1, T2, T3, S}
 end
 
-const pcap_handler = pcap_handler_def{UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}, Cvoid}
+const pcap_handler = pcap_handler_def{Ptr{UInt8}, Ptr{Pcap_pkthdr}, Ptr{UInt8}, Cvoid}
 
 """
     Process packets from a live capture or savefile
 """
-function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{UInt8, Ptr{Nothing}})::Int32
-    callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}))
+function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{Ptr{UInt8}, Ptr{Nothing}})::Int32
+    callback_c =  @cfunction($callback, Cvoid, (Ptr{UInt8}, Ptr{Pcap_pkthdr}, Ptr{UInt8}))
     pcap_loop(p, cnt, callback_c, user)
 end
 
 """
     Process packets from a live capture or savefile
 """
-function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
-    if !hasmethod(callback, Tuple{UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}})
+function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{Ptr{UInt8}, Ptr{Nothing}})::Int32
+    if !hasmethod(callback, Tuple{Ptr{UInt8}, Ptr{Pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
     pcap_loop(p,
                 cnt,
-                @cfunction($callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8})),
+                @cfunction($callback, Cvoid, (Ptr{UInt8}, Ptr{Pcap_pkthdr}, Ptr{UInt8})),
                 user)
 end
 
 """
     Process packets from a live capture or savefile
 """
-function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::Union{UInt8, Ptr{Nothing}})::Int32
-    ccall((:pcap_loop, "libpcap"), Int32, (Ptr{Pcap_t}, Int32, Ptr{Cvoid}, Cuchar), 
+function pcap_loop(p::Ptr{Pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::Union{Ptr{UInt8}, Ptr{Nothing}})::Int32
+    ccall((:pcap_loop, "libpcap"), Int32, (Ptr{Pcap_t}, Int32, Ptr{Cvoid}, Ptr{Cuchar}),
                                                 p, cnt, callback, user)
 end
 
 """
     Process packets from a live capture or savefile
 """
-function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{UInt8, Ptr{Nothing}})::Int32
+function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Type{<:pcap_handler}, user::Union{Ptr{UInt8}, Ptr{Nothing}})::Int32
     callback_c =  @cfunction($callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}))
     pcap_dispatch(p, cnt, callback_c, user)
 end
@@ -78,8 +78,8 @@ end
 """
     Process packets from a live capture or savefile
 """
-function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{UInt8, Ptr{Nothing}})::Int32
-    if !hasmethod(callback, Tuple{UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8}})
+function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Function, user::Union{Ptr{UInt8}, Ptr{Nothing}})::Int32
+    if !hasmethod(callback, Tuple{Ptr{UInt8}, Ptr{Pcap_pkthdr}, Ptr{UInt8}})
         throw(PcapCallbackInvalidParametersError())
     end
     pcap_dispatch(p,
@@ -91,8 +91,8 @@ end
 """
     Process packets from a live capture or savefile
 """
-function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::Union{UInt8, Ptr{Nothing}})::Int32
-    ccall((:pcap_dispatch, "libpcap"), Int32, (Ptr{Pcap_t}, Int32, Ptr{Cvoid}, Cuchar),
+function pcap_dispatch(p::Ptr{Pcap_t}, cnt::Int64, callback::Union{Ptr{Cvoid}, Base.CFunction}, user::Union{Ptr{UInt8}, Ptr{Nothing}})::Int32
+    ccall((:pcap_dispatch, "libpcap"), Int32, (Ptr{Pcap_t}, Cint, Ptr{Cvoid}, Ptr{Cuchar}),
                                                 p, cnt, callback, user)
 end
 
@@ -138,7 +138,7 @@ end
 """
 function pcap_compile(p::Ptr{Pcap_t}, fp::Ref{bpf_program}, str::String, optimize::Int64, netmask::UInt32)::Int32
     ccall((:pcap_compile, "libpcap"), Int32, (Ptr{Pcap_t}, Ref{bpf_program},
-                                                Cstring, Int32, Cuint),
+                                                Cstring, Cint, Cuint),
                                                 p, fp, str, optimize, netmask)
 end
 
@@ -170,7 +170,7 @@ end
     Set the direction for which packets will be captured
 """
 function pcap_setdirection(p::Ptr{Pcap_t}, d::Union{Pcap_direction_t, Int64})::Int32
-    ccall((:pcap_setdirection, "libpcap"), Int32, (Ptr{Pcap_t}, Int32), p, d)
+    ccall((:pcap_setdirection, "libpcap"), Int32, (Ptr{Pcap_t}, Cint), p, d)
 end
 
 mutable struct Pcap_dumper_t
@@ -194,6 +194,6 @@ end
     Write a packet to a capture file
 """
 function pcap_dump(user::UInt8, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
-    ccall((:pcap_dump, "libpcap"), Cvoid, (Cuchar, Ptr{Pcap_pkthdr}, Ptr{UInt8}),
+    ccall((:pcap_dump, "libpcap"), Cvoid, (Ptr{Cuchar}, Ptr{Pcap_pkthdr}, Ptr{Cuchar}),
                                             user, h, packet)
 end
