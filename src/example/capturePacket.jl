@@ -41,5 +41,5 @@ pcap_freecode(program)
 # Capturing a packet
 ret = pcap_loop(handle,
                     1,
-                    @cfunction(callback, Cvoid, (UInt8, Ptr{Pcap_pkthdr}, Ptr{UInt8})),
+                    @cfunction(callback, Cvoid, (Ptr{UInt8}, Ptr{Pcap_pkthdr}, Ptr{UInt8})),
                     C_NULL)
