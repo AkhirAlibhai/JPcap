@@ -9,7 +9,7 @@ pcap_freealldevs(devs)
 handle = pcap_open_live(name, 0, 1, 100)
 
 # Defining a callback function for capturing packets
-function callback(user::ptr{UInt8}, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
+function callback(user::Ptr{UInt8}, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
     # Need to skip the Ethernet header
     pkt = Ipv4Hdr(packet)
 
