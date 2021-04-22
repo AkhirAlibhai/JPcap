@@ -193,7 +193,7 @@ end
 """
     Write a packet to a capture file
 """
-function pcap_dump(user::UInt8, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
+function pcap_dump(user::Ptr{UInt8}, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
     ccall((:pcap_dump, "libpcap"), Cvoid, (Ptr{Cuchar}, Ptr{Pcap_pkthdr}, Ptr{Cuchar}),
                                             user, h, packet)
 end
