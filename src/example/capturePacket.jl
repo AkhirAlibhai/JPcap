@@ -1,13 +1,6 @@
 include("../JPcap.jl")
 using .JPcap
 
-devs = pcap_findalldevs()
-name = j_pcap_if_t(devs).name
-pcap_freealldevs(devs)
-
-# Opens a handle with the first capture device
-handle = pcap_open_live(name, 0, 1, 100)
-
 # Defining a callback function for capturing packets
 function callback(user::Ptr{UInt8}, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cvoid
     # Need to skip the Ethernet header
@@ -16,6 +9,9 @@ function callback(user::Ptr{UInt8}, h::Ptr{Pcap_pkthdr}, packet::Ptr{UInt8})::Cv
     println("Got packet from ", uint32_to_inet(pkt.src_ip), " going to ", uint32_to_inet(pkt.dest_ip))
     return nothing
 end
+
+# Opens a handle with the first capture device
+handle = pcap_open_live(pcap_lookupdev(), 0, 1, 100)
 
 # Only detecting packets from "www.google.com"
 program = Ref{bpf_program}()
