@@ -87,53 +87,80 @@ struct pcap_if_t
                         0)
 end
 
+# TODO: Delete this before merge
+# struct j_pcap_if_t
+#     ptr::Ptr{Union{pcap_if_t, Nothing}}
+#     next::Union{j_pcap_if_t, Nothing}
+#     name::String
+#     description::String
+#     addresses::Union{j_pcap_addr, Nothing}
+#     flags::UInt32
+#     function j_pcap_if_t(pcap_if_t::Ptr{pcap_if_t})
+#         if pcap_if_t == C_NULL
+#             return new(C_NULL,
+#                         nothing,
+#                         "",
+#                         "",
+#                         nothing,
+#                         0)
+#         end
+
+#         loaded_pcap_if_t = unsafe_load(pcap_if_t)
+#         tmp_name = if (loaded_pcap_if_t.name == C_NULL) ""
+#         else unsafe_string(loaded_pcap_if_t.name)
+#         end
+#         tmp_description = if (loaded_pcap_if_t.description == C_NULL) ""
+#         else unsafe_string(loaded_pcap_if_t.description)
+#         end
+
+#         new(pcap_if_t,
+#             j_pcap_if_t(loaded_pcap_if_t.next),
+#             tmp_name,
+#             tmp_description,
+#             j_pcap_addr(loaded_pcap_if_t.addresses),
+#             loaded_pcap_if_t.flags)
+#     end
+# end
+
 struct j_pcap_if_t
-    ptr::Ptr{Union{pcap_if_t, Nothing}}
-    next::Union{j_pcap_if_t, Nothing}
     name::String
     description::String
-    addresses::Union{j_pcap_addr, Nothing}
+    addresses::Union{Ptr{j_pcap_addr}, Nothing} # TODO: Change from Ptr{j_pcap_addr} to j_pcap_addr
     flags::UInt32
+    ptr::Ptr{pcap_if_t}
     function j_pcap_if_t(pcap_if_t::Ptr{pcap_if_t})
-        if pcap_if_t == C_NULL
-            return new(C_NULL,
-                        nothing,
-                        "",
-                        "",
-                        nothing,
-                        0)
-        end
-
         loaded_pcap_if_t = unsafe_load(pcap_if_t)
-        tmp_name = if (loaded_pcap_if_t.name == C_NULL) ""
-        else unsafe_string(loaded_pcap_if_t.name)
-        end
-        tmp_description = if (loaded_pcap_if_t.description == C_NULL) ""
-        else unsafe_string(loaded_pcap_if_t.description)
-        end
 
-        new(pcap_if_t,
-            j_pcap_if_t(loaded_pcap_if_t.next),
-            tmp_name,
-            tmp_description,
-            j_pcap_addr(loaded_pcap_if_t.addresses),
-            loaded_pcap_if_t.flags)
+        new(loaded_pcap_if_t.name == C_NULL ? "" : unsafe_string(loaded_pcap_if_t.name),
+            loaded_pcap_if_t.description == C_NULL ? "" : unsafe_string(loaded_pcap_if_t.description),
+            loaded_pcap_if_t.addresses,
+            loaded_pcap_if_t.flags,
+            pcap_if_t
+            )
     end
 end
 
 """
     Return a list of all devices
 """
-function pcap_findalldevs()::Ptr{pcap_if_t}
-    devs = Ref{pcap_if_t}()
+function pcap_findalldevs()::Array{j_pcap_if_t}
+    devs = Ref{Ref{pcap_if_t}}(Ref{pcap_if_t}())
     err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
 
-    val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{pcap_if_t}, Ptr{UInt8}), devs, err)
+    val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{Ref{pcap_if_t}}, Ptr{UInt8}), devs, err)
 
     if val == PCAP_ERROR
         throw(PcapDeviceError(unsafe_string(pointer(err))))
     end
-    devs[].next # Call unsafe_load on it to access
+
+    devs_array = j_pcap_if_t[]
+    head = devs[][].next
+    while head != C_NULL
+        push!(devs_array, j_pcap_if_t(head))
+        head = unsafe_load(head).next
+    end
+
+    devs_array
 end
 
 """
