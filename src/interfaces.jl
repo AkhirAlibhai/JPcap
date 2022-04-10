@@ -38,6 +38,11 @@ struct j_sockaddr
     end
 end
 
+"""
+    Julia struct of pcap_addr
+    Reference to what it copies can be found here:
+    https://github.com/the-tcpdump-group/libpcap/blob/master/pcap/pcap.h
+"""
 struct pcap_addr
     next::Ptr{pcap_addr}
     addr::Ptr{sockaddr}
@@ -51,29 +56,34 @@ struct pcap_addr
                         Ptr{sockaddr}())
 end
 
+"""
+    Julia version of pcap_addr
+    Load the values from a Ptr{pcap_addr} to make it easier for a user to work with
+    Stores a reference to the original pointer, which can be used in pcap functions
+"""
 struct j_pcap_addr
-    ptr::Ptr{Union{pcap_addr, Nothing}}
-    next::Union{j_pcap_addr, Nothing}
     addr::Union{j_sockaddr, Nothing}
     netmask::Union{j_sockaddr, Nothing}
     broadaddr::Union{j_sockaddr, Nothing}
     dstaddr::Union{j_sockaddr, Nothing}
+    ptr::Ptr{pcap_addr}
     function j_pcap_addr(pcap_addr::Ptr{pcap_addr})
-        if pcap_addr == C_NULL
-            return nothing
-        end
-
         loaded_pcap_addr = unsafe_load(pcap_addr)
 
-        new(pcap_addr,
-            j_pcap_addr(loaded_pcap_addr.next),
-            j_sockaddr(loaded_pcap_addr.addr),
+        new(j_sockaddr(loaded_pcap_addr.addr),
             j_sockaddr(loaded_pcap_addr.netmask),
             j_sockaddr(loaded_pcap_addr.broadaddr),
-            j_sockaddr(loaded_pcap_addr.dstaddr))
+            j_sockaddr(loaded_pcap_addr.dstaddr),
+            pcap_addr
+            )
     end
 end
 
+"""
+    Julia struct of pcap_if_t
+    Reference to what it copies can be found here:
+    https://github.com/the-tcpdump-group/libpcap/blob/master/pcap/pcap.h
+"""
 struct pcap_if_t
     next::Ptr{pcap_if_t}
     name::Cstring
@@ -87,53 +97,30 @@ struct pcap_if_t
                         0)
 end
 
-# TODO: Delete this before merge
-# struct j_pcap_if_t
-#     ptr::Ptr{Union{pcap_if_t, Nothing}}
-#     next::Union{j_pcap_if_t, Nothing}
-#     name::String
-#     description::String
-#     addresses::Union{j_pcap_addr, Nothing}
-#     flags::UInt32
-#     function j_pcap_if_t(pcap_if_t::Ptr{pcap_if_t})
-#         if pcap_if_t == C_NULL
-#             return new(C_NULL,
-#                         nothing,
-#                         "",
-#                         "",
-#                         nothing,
-#                         0)
-#         end
-
-#         loaded_pcap_if_t = unsafe_load(pcap_if_t)
-#         tmp_name = if (loaded_pcap_if_t.name == C_NULL) ""
-#         else unsafe_string(loaded_pcap_if_t.name)
-#         end
-#         tmp_description = if (loaded_pcap_if_t.description == C_NULL) ""
-#         else unsafe_string(loaded_pcap_if_t.description)
-#         end
-
-#         new(pcap_if_t,
-#             j_pcap_if_t(loaded_pcap_if_t.next),
-#             tmp_name,
-#             tmp_description,
-#             j_pcap_addr(loaded_pcap_if_t.addresses),
-#             loaded_pcap_if_t.flags)
-#     end
-# end
-
+"""
+    Julia version of pcap_if_t
+    Load the values from a Ptr{pcap_if_t} to make it easier for a user to work with
+    Stores a reference to the original pointer, which can be used in pcap functions
+"""
 struct j_pcap_if_t
     name::String
     description::String
-    addresses::Union{Ptr{j_pcap_addr}, Nothing} # TODO: Change from Ptr{j_pcap_addr} to j_pcap_addr
+    addresses::Array{j_pcap_addr}
     flags::UInt32
     ptr::Ptr{pcap_if_t}
     function j_pcap_if_t(pcap_if_t::Ptr{pcap_if_t})
         loaded_pcap_if_t = unsafe_load(pcap_if_t)
 
+        addresses = j_pcap_addr[]
+        head = loaded_pcap_if_t.addresses
+        while head != C_NULL
+            push!(addresses, j_pcap_addr(head))
+            head = unsafe_load(head).next
+        end
+
         new(loaded_pcap_if_t.name == C_NULL ? "" : unsafe_string(loaded_pcap_if_t.name),
             loaded_pcap_if_t.description == C_NULL ? "" : unsafe_string(loaded_pcap_if_t.description),
-            loaded_pcap_if_t.addresses,
+            addresses,
             loaded_pcap_if_t.flags,
             pcap_if_t
             )
@@ -166,6 +153,16 @@ end
 """
     Free the memory allocated to the Ptr{pcap_if_t}
 """
-function pcap_freealldevs(alldevs::Ptr{pcap_if_t})::Nothing
-    ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), alldevs)
+function pcap_freealldevs(devs::Ptr{pcap_if_t})::Nothing
+    ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), devs)
+end
+
+function pcap_freealldevs(devs::j_pcap_if_t)::Nothing
+    ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), devs.ptr)
+end
+
+function pcap_freealldevs(devs::Array{j_pcap_if_t})::Nothing
+    if length(devs) > 0
+        ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), devs[1].ptr)
+    end
 end
