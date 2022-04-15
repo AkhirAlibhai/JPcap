@@ -136,7 +136,7 @@ function pcap_findalldevs()::Array{j_pcap_if_t}
 
     val = ccall((:pcap_findalldevs, "libpcap"), Int8, (Ref{Ref{pcap_if_t}}, Ptr{UInt8}), devs, err)
 
-    if val == PCAP_ERROR
+    if val == PCAP_ERROR.PCAP_ERROR
         throw(PcapDeviceError(unsafe_string(pointer(err))))
     end
 
