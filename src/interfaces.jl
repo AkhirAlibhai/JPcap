@@ -1,10 +1,11 @@
-include("constants.jl")
+include("constants/constants.jl")
 include("errors.jl")
 
 export  sockaddr, pcap_addr, pcap_if_t,
         pcap_findalldevs, pcap_freealldevs,
         pcap_lookupdev,
-        j_pcap_if_t, j_pcap_addr, j_sockaddr
+        j_pcap_if_t, j_pcap_addr, j_sockaddr,
+        PCAP_NO_DEVICE_NAME
 
 struct sockaddr
     sa_family::Cushort
@@ -153,9 +154,11 @@ function pcap_freealldevs(devs::Array{j_pcap_if_t})::Nothing
     end
 end
 
+PCAP_NO_DEVICE_NAME = ""
+
 """
     Return the name of the default device
-    If a default device does not exist, returns an empty string
+    If a default device does not exist, returns PCAP_NO_DEVICE_NAME
 
     Since pcap_lookupdev() is deprecated, changed to a call that returns the same thing
 """

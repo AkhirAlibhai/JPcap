@@ -1,8 +1,8 @@
-include("../constants.jl")
+include("../constants/constants.jl")
 include("linkHdrs.jl")
 
 export EtherAddr, EtherHdr,
-        EtherArp, EtherPkt
+       EtherArp, EtherPkt
 
 struct EtherAddr
     ether_addr_octet::NTuple{ETH_MAGIC.ETH_ALEN, Cuchar}

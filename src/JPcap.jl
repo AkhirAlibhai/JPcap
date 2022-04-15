@@ -2,7 +2,7 @@ module JPcap
 
 include("helperFunctions.jl")
 
-include("constants.jl")
+include("constants/constants.jl")
 
 include("types/bpf.jl")
 include("types/ethernetHdr.jl")
