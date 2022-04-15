@@ -1,5 +1,6 @@
 export PCAP_ERRBUF_SIZE,
        PCAP_NETMASK_UNKNOWN,
+       PCAP_NO_DEVICE_NAME,
        PCAP_ERROR, PCAP_WARNING,
        ARPHRD_ID, ARPOP, ETH_MAGIC,
        ETHERTYPE_ID, IP_NUM
@@ -7,6 +8,8 @@ export PCAP_ERRBUF_SIZE,
 PCAP_ERRBUF_SIZE = 256
 
 PCAP_NETMASK_UNKNOWN = 0xffffffff
+
+PCAP_NO_DEVICE_NAME = ""
 
 #=
     Error codes for the pcap API

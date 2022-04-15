@@ -1,28 +1,14 @@
 include("constants.jl")
 include("errors.jl")
 
-export pcap_lookupdev,
-        sockaddr, pcap_addr, pcap_if_t,
+export  sockaddr, pcap_addr, pcap_if_t,
         pcap_findalldevs, pcap_freealldevs,
+        pcap_lookupdev,
         j_pcap_if_t, j_pcap_addr, j_sockaddr
-
-"""
-    Return the name of the default device, if it exists
-"""
-function pcap_lookupdev()::String
-    err = Vector{UInt8}(undef, PCAP_ERRBUF_SIZE)
-
-    dev = ccall((:pcap_lookupdev, "libpcap"), Ptr{Int8}, (Ptr{UInt8},), err)
-
-    if dev == C_NULL
-        throw(PcapDeviceError(unsafe_string(pointer(err))))
-    end
-    unsafe_string(dev)
-end
 
 struct sockaddr
     sa_family::Cushort
-    sa_data::Ptr{UInt8} # TODO: Do not access, needs to be cast into the right kind of sockaddr
+    sa_data::NTuple{14, Cuchar}  # TODO: Do not access, needs to be cast into the right kind of sockaddr
     sockaddr() = new(0, Base.unsafe_convert(Cstring, ""))
 end
 
@@ -165,4 +151,20 @@ function pcap_freealldevs(devs::Array{j_pcap_if_t})::Nothing
     if length(devs) > 0
         ccall((:pcap_freealldevs, "libpcap"), Cvoid, (Ptr{pcap_if_t}, ), devs[1].ptr)
     end
+end
+
+"""
+    Return the name of the default device
+    If a default device does not exist, returns an empty string
+
+    Since pcap_lookupdev() is deprecated, changed to a call that returns the same thing
+"""
+function pcap_lookupdev()::String
+    devs = pcap_findalldevs()
+
+    if (length(devs) < 1)
+        return PCAP_NO_DEVICE_NAME
+    end
+
+    return devs[1].name
 end
